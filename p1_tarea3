@@ -1,0 +1,136 @@
+/*
+ * Tarea 3. A partir del programa de la Tarea 1.b añadir una nueva funcionalidad 
+ * para que dependiendo del pulsador que se pulse, “pright” o “pleft", el parpadeo 
+ * se mueva del dígito actual al dígito de la derecha o al de la izquierda, respectivamente.
+ */
+
+//Variable para manejar la direccion del movimiento de los displays 
+int direccion = 0;
+//Variable para modificar la velocidad del parpadeo
+int velocidad = 5;
+
+void setup() { 
+  //Habilitar los 7-segmentos y los displays como salida
+  DDRL = B00001111;
+  DDRA = B01111111;
+  //Activo la resistencia de pull up
+  DDRC = B00000001;
+  PORTC = B11111000;
+}
+
+void loop() {
+  unidades();
+}
+
+//Metodo para hacer papadear el display 4
+void unidades(){
+  //habilito el display 4
+  PORTL = B00001110;
+  parpadeo();
+  //si he pulsado el boton pRigh muevo el display a la derecha,
+  //si no por defecto se mueve a la izquierda
+  if(direccion == 1){
+    millares();  
+  }else if(direccion == 0){
+    decenas();  
+  }
+}
+
+//Metodo para hacer papadear el display 3
+void decenas(){
+  PORTL = B00001101;
+  parpadeo();  
+  if(direccion == 1){
+    unidades();  
+  }else if(direccion == 0){
+    centenas();  
+  }
+}
+
+//Metodo para hacer papadear el display 2
+void centenas(){
+  PORTL = B00001011;
+  parpadeo();  
+  if(direccion == 1){
+    decenas();  
+  }else if(direccion == 0){
+    millares();  
+  }
+}
+
+//Metodo para hacer papadear el display 1
+void millares(){
+  PORTL = B00000111;
+  parpadeo();  
+  if(direccion == 1){
+    centenas();  
+  }else if(direccion == 0){
+    unidades();  
+  }
+}
+
+//Metodo para comprobar que boton ha sido pulsado
+void botonPulsado(){
+  //Si pulso el boton pLeft los display se mueven a la izquierda
+  if(digitalRead(32) == LOW){
+    direccion = 0;
+  }
+  //Si pulso el boton pRigh los displays se mueven a la derecha
+  if(digitalRead(30) == LOW){
+    direccion = 1;
+  }
+  //Si pulso el boton pDown el parpadeo será más rapido
+  if(digitalRead(31) == LOW){
+    velocidad--;
+    delay(200);  
+    if(velocidad <= 0){
+      velocidad = 1;  
+    }
+  }
+  //Si pulso el boton pUp el parpadeo será más lento
+  if(digitalRead(34) == LOW){
+    velocidad += 5;
+    delay(200);
+    if(velocidad >= 30){
+      velocidad = 30;
+    }
+  }
+  //Si pulso el boton pCenter re restablece la velocidad del parpadeo
+  if(digitalRead(33) == LOW){
+      velocidad = 5;
+  }
+}
+
+void parpadeo(){
+  PORTA = B01111111;  
+  //un bucle para hacer un delay de 500 milisegundos (por defecto)
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+  PORTA = B00000000;
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+  PORTA = B01111111;
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+  PORTA = B00000000;
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+  PORTA = B01111111;
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+  PORTA = B00000000;
+  for(int i = 0; i < 100; i++){
+      botonPulsado();
+      delay(velocidad);
+  }
+}
