@@ -1,0 +1,202 @@
+/*
+ * Tarea 5. Contador de dos dígitos y sincronización por interrupciones. El objetivo de esta tarea es utilizar 
+ * las interrupciones como técnica de sincronización. Para ello, realice las conexiones que estime oportunas 
+ * (si no están hechas) para que cada pulsación de los pulsadores "pup", "pdown" o "pcenter" genere una 
+ * interrupción utilizando las líneas de petición de interrupción INT0 (pin 21), INT1 (pin 20) e 
+ * INT2 (pin 19), respectivamente. Las rutinas de servicio de esas interrupciones serán las encargadas 
+ * de actualizar el contador según el pulsador que se haya pulsado. La tarea de visualización estará asignada 
+ * a la función loop() como en la tarea 4.
+ */
+ 
+#define cero B00111111
+#define uno B00000110
+#define dos B01011011
+#define tres B01001111 
+#define cuatro B01100110
+#define cinco B01101101
+#define seis B01111101
+#define siete B00000111
+#define ocho B01111111
+#define nueve B01100111
+
+//Creo dos variables para llevar la cuenta del contador
+int unidad = 0;
+int decena = 0;
+
+void setup(){  
+  //Habilito como salido las 7-segmentos del display D3 y D4
+  DDRL = B00000011;
+  DDRL = B00000011;
+  DDRA = B01111111;
+  //Activo la resistencia de pull up
+  DDRC = B00000001;
+  PORTC = B11111100;
+  //Habilito las interrupciones para el pin 20 y 21
+  attachInterrupt(digitalPinToInterrupt(20), suma, FALLING);
+  delay(200);
+  attachInterrupt(digitalPinToInterrupt(21), resta, FALLING);
+  delay(200);
+}
+
+void loop(){
+  
+  //Si pulso pDown resto una unidad
+  if(digitalRead(31) == LOW){
+    tone (37, 106, 100);
+    resta();
+    delay(200);
+  }  
+  //Si pulso pLeft ractivo la cuenta atras
+  if(digitalRead(32) == LOW){
+    tone (37, 106, 100);
+    cuentaAtras();
+    delay(200);
+  }
+  //Si pulso pCenter reseteo la cuenta
+  if(digitalRead(33) == LOW){
+    tone (37, 50, 200);
+    reset();
+    delay(500);  
+  }
+  //Si pulso pUp sumo una unidad
+  if(digitalRead(34) == LOW){
+    tone (37, 106, 100);
+    suma();
+    delay(200);
+  }
+  //Metodo para hacer parecer que los dos display estan encendidos a la vez
+  unidades();
+  delay(10);
+  decenas();
+  delay(10);
+}
+//Metodo para mostrar los digitos en el display de las unidades
+void unidades(){
+  //Habilito el display de las unidades
+  PORTL = B00000010;
+  switch(unidad){
+    case 0:
+      PORTA = cero;  
+      break;
+    case 1:
+      PORTA = uno;  
+      break;
+    case 2:
+      PORTA = dos;  
+      break;
+    case 3:
+      PORTA = tres;  
+      break;
+    case 4:
+      PORTA = cuatro;  
+      break;
+    case 5:
+      PORTA = cinco;  
+      break;
+    case 6:
+      PORTA = seis;  
+      break;
+    case 7:
+      PORTA = siete;  
+      break;
+    case 8:
+      PORTA = ocho;  
+      break;
+    case 9:
+      PORTA = nueve;  
+      break;
+  }
+}
+//Metodo para mostar los digitas en el display de las decenas
+void decenas(){
+  //Habilito el display de las decenas
+  PORTL = B00000001;
+  switch(decena){
+    case 0:
+      PORTA = cero;  
+      break;
+    case 1:
+      PORTA = uno;  
+      break;
+    case 2:
+      PORTA = dos;  
+      break;
+    case 3:
+      PORTA = tres;  
+      break;
+    case 4:
+      PORTA = cuatro;  
+      break;
+    case 5:
+      PORTA = cinco;  
+      break;
+    case 6:
+      PORTA = seis;  
+      break;
+    case 7:
+      PORTA = siete;  
+      break;
+    case 8:
+      PORTA = ocho;  
+      break;
+    case 9:
+      PORTA = nueve;  
+      break;
+  }
+}
+//Metodo para poner a cero el contador
+void reset(){
+  unidad = 0;
+  decena = 0;
+}
+//Metodo para sumar una unidad
+void suma(){
+  if(unidad >= 9){
+    decena++;
+    if(decena >= 9){
+      decena = 0;  
+    }
+    unidad = 0;
+  }else{
+    unidad++;
+  }
+}
+
+//Metodo para restar una unidad
+void resta(){
+  if(unidad <= 0){
+    decena--;
+    if(decena < 0){
+      decena = 9;
+    }
+    unidad = 9;
+  }else{
+    unidad--;  
+  }  
+}
+
+void cuentaAtras(){
+  boolean fin = false;
+  while(!fin){
+    //Bucle para que se vea como se cambian los digitos
+    for(int i = 0; i < 10; i++){
+      unidades();
+      delay(10);
+      decenas();
+      delay(10);
+    }
+   
+    if(unidad == 0){
+      decena--;
+      if(decena == -1){
+        decena = 0;
+        fin = true;
+      }else{
+        unidad = 9;  
+      }      
+    }else{
+      unidad--;  
+    } 
+  }
+  tone(37, 50, 200);
+}
