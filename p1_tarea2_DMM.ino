@@ -5,6 +5,7 @@
  * 3) Parpadeo de las centenas; 4) Parpadeo de las unidades de millar y 
  * 5) Parpadeo secuencial de los 4 dígitos (como tarea1.b). Si lo desea añada más funciones como mejoras.
  */
+
 void setup() {
   //Habilito como salida los 7-segmentos de los 4 displays
   DDRA = B01111111;
