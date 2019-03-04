@@ -1,0 +1,190 @@
+/*
+ * Tarea 4. Contador de dos dígitos y sincronización por consulta de estado. Realizar un contador electrónico 
+ * con dos dígitos (decenas-unidades) que se actualiza dependiendo del pulsador que se pulse: pulsador “pup” 
+ * incrementa en una unidad, pulsador “pdown” decrementa en una unidad, pulsador "pcenter" inicializa a “0”. 
+ * La detección de la pulsación se ha de hacer por consulta de estado. Si estando el contador a 00 se pulsa el 
+ * pulsador “pdown” el contador ha de cambiar a 99 y si ahora se pulsa “pup” el contador deberá regresar a 00. 
+ * Cada vez que cambie el estado del contador ha de oírse un pitido corto por el zumbador. En este apartado se 
+ * deberá afrontar la complejidad adicional de mostrar varios dígitos simultáneamente en el display. Para ello, 
+ * es necesario de un mecanismo de visualización “entrelazada” en el que se van alternando la visualización de 
+ * los dígitos unidades y decenas a una cierta frecuencia (100Hz, 10ms). Por ejemplo: se visualizan las unidades 
+ * y se apagan las decenas durante 10ms, luego se apagan las unidades y se encienden las decenas durante 10ms y así, 
+ * sucesivamente. Si el entrelazado se hace lentamente se observa el parpadeo entre las unidades y decenas pero
+ * a partir de una cierta frecuencia ya el ojo humano no es capaz de apreciar el parpadeo y se ve estático.
+ */
+
+//Creo dos variables para llevar la cuenta del contador
+int unidad = 0;
+int decena = 0;
+
+void setup(){  
+  //Habilito como salida las 7-segmentos del display D3 y D4
+  DDRL = B00000011;
+  DDRA = B01111111;
+  //Activo la resistencia de pull up
+  DDRC = B00000001;
+  PORTC = B11111000;
+}
+
+void loop(){
+  //Si pulso el boton pUp sumo una unidad
+  if(digitalRead(34) == LOW){
+    tone (37, 106, 100);
+    suma();
+    //Espero 100 milisegundos para que no salte el metodo varias veces cuando pulso el boton
+    delay(200);
+  }
+  //Si pulso el boton pDown resto una unidad
+  if(digitalRead(31) == LOW){
+    tone (37, 106, 100);
+    resta();
+    delay(200);
+  }
+  //Si pulso el boton pRigh suma una decena
+  if(digitalRead(30) == LOW){
+    tone (37, 106, 100);
+    suma10();
+    delay(200);
+  }
+  //Si pulso el boton pLeft resto una decena
+  if(digitalRead(32) == LOW){
+    tone (37, 106, 100);
+    resta10();
+    delay(200);
+  }
+  //Si pulso el boton pCenter reseteo el contador
+  if(digitalRead(33) == LOW){
+    tone (37, 106, 100);
+    reset();
+    delay(200);  
+  }
+  //Metodo para hacer parecer que los dos display estan encendidos a la vez
+  unidades();
+  delay(10);
+  decenas();
+  delay(10);
+}
+
+//Metodo para mostrar los digitos en el display de las unidades
+void unidades(){
+  //Deshabilitar el display de las decenas y habilitar el de las unidades
+  digitalWrite(49, LOW);
+  digitalWrite(48, HIGH);
+  if(unidad == 0){
+    PORTA = B00111111;
+  }
+  if(unidad == 1){
+    PORTA = B00000110;
+  }
+  if(unidad == 2){
+    PORTA = B01011011;
+  }
+  if(unidad == 3){
+    PORTA = B01001111;
+  }
+  if(unidad == 4){
+    PORTA = B01100110;
+  }
+  if(unidad == 5){
+    PORTA = B01101101;
+  }
+  if(unidad == 6){
+    PORTA = B01111101;
+  }
+  if(unidad == 7){
+    PORTA = B00000111;
+  }
+  if(unidad == 8){
+    PORTA = B01111111;
+  }
+  if(unidad == 9){
+    PORTA = B01100111;
+  }
+}
+
+//Metodo para mostar los digitas en el display de las decenas
+void decenas(){
+  //Desabilitar el display de las unidades y habilitar el de las decenas
+  digitalWrite(49, HIGH);
+  digitalWrite(48, LOW);
+  if(decena == 0){
+    PORTA = B00111111;
+  }
+  if(decena == 1){
+    PORTA = B00000110;
+  }
+  if(decena == 2){
+    PORTA = B01011011;
+  }
+  if(decena == 3){
+    PORTA = B01001111;
+  }
+  if(decena == 4){
+    PORTA = B01100110;
+  }
+  if(decena == 5){
+    PORTA = B01101101;
+  }
+  if(decena == 6){
+    PORTA = B01111101;
+  }
+  if(decena == 7){
+    PORTA = B00000111;
+  }
+  if(decena == 8){
+    PORTA = B01111111;
+  }
+  if(decena == 9){
+    PORTA = B01100111;
+  }
+}
+
+//Metodo para poner a cero el contador
+void reset(){
+  unidad = 0;
+  decena = 0;  
+}
+
+//Metodo para sumar una unidad
+void suma(){
+  if(unidad >= 9){
+    decena++;
+    if(decena >= 9){
+      decena = 0;  
+    }
+    unidad = 0;
+  }else{
+    unidad++;
+  }
+}
+
+//Metodo para sumar una decena
+void suma10(){
+  if(decena >= 9){
+    decena = 0;
+  }else{
+    decena++;  
+  }
+}
+
+//Metodo para restar una unidad
+void resta(){
+  if(unidad <= 0){
+    decena--;
+    if(decena < 0){
+      decena = 9;
+    }
+    unidad = 9;
+  }else{
+    unidad--;  
+  }  
+}
+
+//Metodo para restar una decena
+void resta10(){
+  if(decena <= 0){
+    decena = 9;
+  }else{
+    decena--;  
+  }
+}
