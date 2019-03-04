@@ -1,0 +1,54 @@
+/*
+ * Hacer un programa para que el parpadeo del apartado anterior se haga 
+ * secuencialmente con todos los dígitos: unidades --> decenas --> centenas --> uds. millar, 
+ * es decir, primero parpadean las unidades durante 3 segundos y luego, secuencialmente, 
+ * las decenas, centenas y uds. millares. Cuando cambie de dígito generar una señal 
+ * acústica para avisar al usuario. Tiene completa libertad para elegir la duración y 
+ * frecuencia del pitido que se oirá por el zumbador.
+ */
+ 
+void setup() {
+  /* 
+   * Difinimos la dirección de los pines asociados a los bits 
+   * de un puerto como: entrada (0) o salida (1). Para Poder encender
+   * los segmentos de los 4 display
+   */
+  DDRA = B01111111;
+  DDRL = B00001111;
+}
+
+void loop() {
+  //habilito el display D4
+  PORTL = B00001110;
+  parpadear();
+    
+  //habilito el display D3
+  PORTL = B00001101;
+  parpadear();
+
+  //habilito el display D2
+  PORTL = B00001011;
+  parpadear();
+
+  //habilito el display D1
+  PORTL = B00000111;
+  parpadear();
+}
+
+//metodo para hacer parpadear los segmentos durante 3 seg.
+void parpadear(){
+  PORTA = B01111111;
+  delay(500);
+  PORTA = B00000000;
+  delay(500);
+  PORTA = B01111111;
+  delay(500);
+  PORTA = B00000000;
+  delay(500);
+  PORTA = B01111111;
+  delay(500);
+  PORTA = B00000000;
+  delay(500);
+  //cuando cambia de digito genera una señal acustica
+  tone(37, 106, 100);
+}
